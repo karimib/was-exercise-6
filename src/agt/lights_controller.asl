@@ -21,8 +21,34 @@ lights("off").
  * Body: greets the user
 */
 @start_plan
-+!start : td("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#Lights", Url) <-
-    .print("Hello world").
++!start : td("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#Lights", Url)  & lights(State) <-
+    .print("Starting lights manager...");
+    makeArtifact("Lights", "org.hyperagents.jacamo.artifacts.wot.ThingArtifact", [Url], Lights);
+    .send(personal_assistant, tell, lights(State)).
+
+@lights_on_plan
++!lights_on : true <-
+    setState("on").
+
+@lights_off_plan
++!ligths_off : true <-
+    setState("off").
+
+@set_state_plan
++!setState(newState) : true <- 
+   invokeAction("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#SetState", newState);
+   -+lights(newState).
+
++lights(State) : true <- 
+    .print("Lights are ", State);
+    .send(personal_assistant, tell, lights(State)).
+
++increaseIlluminance : lights("off") <- 
+    .print("Lights are off, increasing illuminance...");
+    .send(personal_assistant, tell, {lights_on_plan}).
+
++increaseIlluminance : lights("on") <- 
+    .send(personal_assistant, tell, {}).
 
 /* Import behavior of agents that work in CArtAgO environments */
 { include("$jacamoJar/templates/common-cartago.asl") }

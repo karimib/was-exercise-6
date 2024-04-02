@@ -21,8 +21,34 @@ blinds("lowered").
  * Body: greets the user
 */
 @start_plan
-+!start : td("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#Blinds", Url) <-
-    .print("Hello world").
++!start : td("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#Blinds", Url) & blinds(State) <-
+    .print("Starting blinds controller...");
+    makeArtifact("Blinds", "org.hyperagents.jacamo.artifacts.wot.ThingArtifact", [Url], Blinds);
+    .send(personal_assistant, tell, blinds(State)).
+
+@blinds_raise_plan
++!blinds_raise : true <-
+    setState("raised").
+
+@blinds_lower_plan
++!blinds_lower : true <-
+    setState("lowered").
+
+@set_state_plan
++!setState(newState) : true <- 
+   invokeAction("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#SetState", newState);
+   -+blinds(newState).
+
++blinds(State) : true <-
+    .print("Blinds are ", State);
+    .send(personal_assistant, tell, blinds(State)).
+
++increaseIlluminance : blinds("lowered") <-
+    .print("Blinds are lowered, increasing illuminance...");
+    .send(personal_assistant, tell, lights_on_plan).
+
++increaseIlluminance : blinds("raised") <- 
+    .send(personal_assistant, tell, {}).
 
 /* Import behavior of agents that work in CArtAgO environments */
 { include("$jacamoJar/templates/common-cartago.asl") }
