@@ -8,6 +8,7 @@ td("https://was-course.interactions.ics.unisg.ch/wake-up-ontology#Lights", "http
 
 // The agent initially believes that the lights are "off"
 lights("off").
+plays(initiator,personal_assistant).
 
 /* Initial goals */ 
 
@@ -44,11 +45,29 @@ lights("off").
     .send(personal_assistant, tell, lights(State)).
 
 +increaseIlluminance : lights("off") <- 
-    .print("Lights are off, increasing illuminance...");
-    .send(personal_assistant, tell, {lights_on_plan}).
+    .print("Lights are off, increasing illuminance...").
 
-+increaseIlluminance : lights("on") <- 
-    .send(personal_assistant, tell, {}).
+
+
+
+     /* Plans */
+// send a message to initiator introducing myself // as a participant
++plays(initiator,In)
+        :  .my_name(Me)
+        <- .send(In,tell,introduction(participant,Me)).
+
+// answer a Call For Proposal
+@c1 +cfp(CNPId,Task)[source(A)]
+    : plays(initiator,A) & lights(State)
+    <- +proposal(CNPId,State,Offer); // remember my proposal
+            .send(A,tell,propose(CNPId,Offer)).
+
+@r1 +accept_proposal(CNPId)
+    : proposal(CNPId,Task,Offer) & true
+    <- .print("My proposal ’",Offer,"’ won CNP ",CNPId," for ",Task,"!");
+        !!set_state("on")[source(lights_controller)].
+           // do the task and report to initiator
+           // do the task and report to initiator
 
 /* Import behavior of agents that work in CArtAgO environments */
 { include("$jacamoJar/templates/common-cartago.asl") }
